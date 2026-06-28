@@ -1,4 +1,5 @@
 "use client";
+import { exportTypesXml } from "@/app/lib/exporter/typesExporter";
 
 import { useMemo, useRef, useState } from "react";
 
@@ -173,51 +174,11 @@ export default function TypesToolPage() {
     );
   }
 
-  function downloadXml() {
-    if (!loaded) return;
+function downloadXml() {
+  if (!loaded) return;
 
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(loaded.xmlText, "application/xml");
-
-    for (const item of items) {
-      const type = Array.from(xml.getElementsByTagName("type")).find(
-        (node) => node.getAttribute("name") === item.name
-      );
-
-      if (!type) continue;
-
-      for (const field of ["nominal", "min", "lifetime", "restock"] as const) {
-        const node = type.getElementsByTagName(field)[0];
-        if (node) node.textContent = item[field];
-      }
-
-      const category = type.getElementsByTagName("category")[0];
-      if (category && item.category) {
-        category.setAttribute("name", item.category);
-      }
-
-      const usage = type.getElementsByTagName("usage")[0];
-      if (usage && item.usage) {
-        usage.setAttribute("name", item.usage);
-      }
-
-      const value = type.getElementsByTagName("value")[0];
-      if (value && item.value) {
-        value.setAttribute("name", item.value);
-      }
-    }
-
-    const output = new XMLSerializer().serializeToString(xml);
-    const blob = new Blob([output], { type: "application/xml" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = loaded.fileName.replace(".xml", "-edited.xml");
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }
+  exportTypesXml(loaded.xmlText, items, loaded.fileName);
+}
 
   const filteredItems = useMemo(() => {
     return items.filter((item) =>
