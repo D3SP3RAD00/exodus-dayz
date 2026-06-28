@@ -2,24 +2,11 @@
 
 import { useMemo, useRef, useState } from "react";
 
-type TypeItem = {
-  name: string;
-  nominal: string;
-  min: string;
-  lifetime: string;
-  restock: string;
-  category: string;
-  usage: string;
-  value: string;
-};
-
-type LoadedFile = {
-  fileName: string;
-  xmlText: string;
-  rootNode: string;
-  valid: boolean;
-  error?: string;
-};
+import {
+  LoadedFile,
+  TypeItem,
+  parseTypesXml,
+} from "@/app/lib/parser/typesParser";
 
 function secondsToTime(value: string) {
   const seconds = Number(value);
@@ -32,54 +19,10 @@ function secondsToTime(value: string) {
   if (hours >= 1) return `${hours.toFixed(hours % 1 === 0 ? 0 : 1)} hour(s)`;
 
   const minutes = seconds / 60;
-  if (minutes >= 1) return `${minutes.toFixed(minutes % 1 === 0 ? 0 : 1)} minute(s)`;
+  if (minutes >= 1)
+    return `${minutes.toFixed(minutes % 1 === 0 ? 0 : 1)} minute(s)`;
 
   return `${seconds} second(s)`;
-}
-
-function parseTypesXml(xmlText: string, fileName: string): {
-  loaded: LoadedFile;
-  items: TypeItem[];
-} {
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlText, "application/xml");
-  const error = xml.querySelector("parsererror");
-
-  if (error) {
-    return {
-      loaded: {
-        fileName,
-        xmlText,
-        rootNode: "Unknown",
-        valid: false,
-        error: "XML syntax error detected.",
-      },
-      items: [],
-    };
-  }
-
-  const rootNode = xml.documentElement.nodeName;
-
-  const items = Array.from(xml.getElementsByTagName("type")).map((type) => ({
-    name: type.getAttribute("name") || "UNKNOWN",
-    nominal: type.getElementsByTagName("nominal")[0]?.textContent || "",
-    min: type.getElementsByTagName("min")[0]?.textContent || "",
-    lifetime: type.getElementsByTagName("lifetime")[0]?.textContent || "",
-    restock: type.getElementsByTagName("restock")[0]?.textContent || "",
-    category: type.getElementsByTagName("category")[0]?.getAttribute("name") || "",
-    usage: type.getElementsByTagName("usage")[0]?.getAttribute("name") || "",
-    value: type.getElementsByTagName("value")[0]?.getAttribute("name") || "",
-  }));
-
-  return {
-    loaded: {
-      fileName,
-      xmlText,
-      rootNode,
-      valid: true,
-    },
-    items,
-  };
 }
 
 function analyzeValue(label: string, value: string) {
@@ -190,8 +133,10 @@ function analyzeValue(label: string, value: string) {
 
 function badgeClass(color: string) {
   if (color === "red") return "border-red-500/50 bg-red-500/10 text-red-200";
-  if (color === "yellow") return "border-yellow-500/50 bg-yellow-500/10 text-yellow-200";
-  if (color === "green") return "border-emerald-500/50 bg-emerald-500/10 text-emerald-200";
+  if (color === "yellow")
+    return "border-yellow-500/50 bg-yellow-500/10 text-yellow-200";
+  if (color === "green")
+    return "border-emerald-500/50 bg-emerald-500/10 text-emerald-200";
   return "border-blue-500/50 bg-blue-500/10 text-blue-200";
 }
 
@@ -247,13 +192,19 @@ export default function TypesToolPage() {
       }
 
       const category = type.getElementsByTagName("category")[0];
-      if (category && item.category) category.setAttribute("name", item.category);
+      if (category && item.category) {
+        category.setAttribute("name", item.category);
+      }
 
       const usage = type.getElementsByTagName("usage")[0];
-      if (usage && item.usage) usage.setAttribute("name", item.usage);
+      if (usage && item.usage) {
+        usage.setAttribute("name", item.usage);
+      }
 
       const value = type.getElementsByTagName("value")[0];
-      if (value && item.value) value.setAttribute("name", item.value);
+      if (value && item.value) {
+        value.setAttribute("name", item.value);
+      }
     }
 
     const output = new XMLSerializer().serializeToString(xml);
@@ -278,7 +229,6 @@ export default function TypesToolPage() {
   const lifetimeZeroCount = items.filter((item) => item.lifetime === "0").length;
   const missingCategoryCount = items.filter((item) => !item.category).length;
   const missingUsageCount = items.filter((item) => !item.usage).length;
-  const missingValueCount = items.filter((item) => !item.value).length;
 
   return (
     <main className="min-h-screen bg-[#06101d] text-slate-100">
@@ -350,7 +300,9 @@ export default function TypesToolPage() {
             <div className="mt-10 rounded-2xl border border-slate-700 bg-[#0b1726] p-7 shadow-2xl">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-2xl font-bold">Upload or Paste types.xml</h3>
+                  <h3 className="text-2xl font-bold">
+                    Upload or Paste types.xml
+                  </h3>
                   <p className="mt-2 text-slate-400">
                     Select a file or paste XML directly.
                   </p>
@@ -367,10 +319,10 @@ export default function TypesToolPage() {
               <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.35fr]">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const file = e.dataTransfer.files?.[0];
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const file = event.dataTransfer.files?.[0];
                     if (file) handleFile(file);
                   }}
                   className="flex min-h-96 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-500 bg-[#07111f] p-8 text-center transition hover:border-emerald-500 hover:bg-[#0b1726]"
@@ -380,8 +332,8 @@ export default function TypesToolPage() {
                     type="file"
                     accept=".xml"
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
                       if (file) handleFile(file);
                     }}
                   />
@@ -406,7 +358,7 @@ export default function TypesToolPage() {
 
                     <textarea
                       value={pasteText}
-                      onChange={(e) => setPasteText(e.target.value)}
+                      onChange={(event) => setPasteText(event.target.value)}
                       placeholder="Paste your types.xml content here..."
                       className="mt-5 h-72 w-full rounded-xl border border-slate-700 bg-[#050b14] p-5 font-mono text-sm text-slate-200 outline-none focus:border-emerald-500"
                     />
@@ -427,8 +379,14 @@ export default function TypesToolPage() {
                 <Stat label="XML" value={loaded.valid ? "Valid" : "Invalid"} />
                 <Stat label="Items" value={items.length.toLocaleString()} />
                 <Stat label="Disabled" value={disabledCount.toLocaleString()} />
-                <Stat label="Lifetime 0" value={lifetimeZeroCount.toLocaleString()} />
-                <Stat label="No Category" value={missingCategoryCount.toLocaleString()} />
+                <Stat
+                  label="Lifetime 0"
+                  value={lifetimeZeroCount.toLocaleString()}
+                />
+                <Stat
+                  label="No Category"
+                  value={missingCategoryCount.toLocaleString()}
+                />
                 <Stat label="No Usage" value={missingUsageCount.toLocaleString()} />
               </div>
             )}
@@ -447,14 +405,14 @@ export default function TypesToolPage() {
 
                   <input
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(event) => setSearch(event.target.value)}
                     placeholder="Search classname..."
                     className="mt-4 w-full rounded-xl border border-slate-700 bg-[#050b14] p-3 text-slate-100 outline-none focus:border-emerald-500"
                   />
 
                   <p className="mt-3 text-sm text-slate-500">
-                    Showing {Math.min(filteredItems.length, 300).toLocaleString()} of{" "}
-                    {filteredItems.length.toLocaleString()} matches.
+                    Showing {Math.min(filteredItems.length, 300).toLocaleString()}{" "}
+                    of {filteredItems.length.toLocaleString()} matches.
                   </p>
 
                   <div className="mt-4 max-h-[600px] overflow-y-auto pr-2">
@@ -556,9 +514,18 @@ export default function TypesToolPage() {
                     <div className="mt-5 space-y-3">
                       <Summary label="Spawn Target" value={selected.nominal} />
                       <Summary label="Minimum" value={selected.min} />
-                      <Summary label="Despawn Time" value={secondsToTime(selected.lifetime)} />
-                      <Summary label="Restock Delay" value={secondsToTime(selected.restock)} />
-                      <Summary label="Category" value={selected.category || "Not set"} />
+                      <Summary
+                        label="Despawn Time"
+                        value={secondsToTime(selected.lifetime)}
+                      />
+                      <Summary
+                        label="Restock Delay"
+                        value={secondsToTime(selected.restock)}
+                      />
+                      <Summary
+                        label="Category"
+                        value={selected.category || "Not set"}
+                      />
                       <Summary label="Usage" value={selected.usage || "Not set"} />
                       <Summary label="Value" value={selected.value || "Not set"} />
                     </div>
@@ -566,9 +533,9 @@ export default function TypesToolPage() {
                     <div className="mt-6 rounded-2xl border border-blue-500/40 bg-blue-500/10 p-5">
                       <h4 className="font-bold text-blue-300">Nova Note</h4>
                       <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                        Change one value at a time, download the edited XML, then test
-                        before uploading to Nitrado. Huge boosts across many items can
-                        flood the loot economy.
+                        Change one value at a time, download the edited XML, then
+                        test before uploading to Nitrado. Huge boosts across many
+                        items can flood the loot economy.
                       </p>
                     </div>
                   </aside>
@@ -587,8 +554,8 @@ export default function TypesToolPage() {
                     What is types.xml?
                   </h3>
                   <p className="mt-2 text-slate-300">
-                    types.xml controls every item in DayZ. You can edit spawn values,
-                    restock timers, categories, usage, flags, and more.
+                    types.xml controls every item in DayZ. You can edit spawn
+                    values, restock timers, categories, usage, flags, and more.
                   </p>
                 </div>
               </div>
@@ -633,9 +600,7 @@ function SubItem({ label, active = false }: { label: string; active?: boolean })
   return (
     <div
       className={`ml-4 rounded-xl px-4 py-3 font-bold ${
-        active
-          ? "bg-emerald-500/20 text-white"
-          : "text-slate-400 hover:bg-slate-800"
+        active ? "bg-emerald-500/20 text-white" : "text-slate-400 hover:bg-slate-800"
       }`}
     >
       {label}
@@ -671,13 +636,17 @@ function SmartField({
 
       <input
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         className="rounded-xl border border-slate-700 bg-[#050b14] p-3 text-slate-100 outline-none focus:border-emerald-500"
       />
 
       <span className="text-xs leading-relaxed text-slate-500">{note}</span>
 
-      <span className={`rounded-xl border px-3 py-2 text-xs ${badgeClass(analysis.color)}`}>
+      <span
+        className={`rounded-xl border px-3 py-2 text-xs ${badgeClass(
+          analysis.color
+        )}`}
+      >
         <strong>{analysis.label}:</strong> {analysis.message}
       </span>
     </label>
@@ -701,7 +670,7 @@ function BasicField({
 
       <input
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         placeholder="Not set"
         className="rounded-xl border border-slate-700 bg-[#050b14] p-3 text-slate-100 outline-none focus:border-emerald-500"
       />
