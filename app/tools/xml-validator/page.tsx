@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 
-type Warning = {
-  label: string;
-  detail: string;
+type Check = {
+  title: string;
+  message: string;
+  level: "warning" | "info" | "success";
 };
 
 type Result = {
@@ -14,7 +15,7 @@ type Result = {
   rootNode?: string;
   itemCount?: number;
   fileType?: string;
-  warnings?: Warning[];
+  checks?: Check[];
 };
 
 function detectDayZFile(fileName: string, rootNode?: string) {
@@ -30,67 +31,108 @@ function detectDayZFile(fileName: string, rootNode?: string) {
   return "Unknown XML";
 }
 
-function getChildNumber(type: Element, tag: string) {
-  const value = type.querySelector(tag)?.textContent?.trim();
-  if (!value) return null;
-
-  const number = Number(value);
-  return Number.isNaN(number) ? null : number;
-}
-
 function analyzeTypesXml(xml: Document) {
-  const warnings: Warning[] = [];
+  const checks: Check[] = [];
   const types = Array.from(xml.getElementsByTagName("type"));
-  const names = new Map<string, number>();
+  const seen = new Map<string, number>();
 
   let disabledItems = 0;
   let lifetimeZero = 0;
   let missingCategory = 0;
+  let missingUsage = 0;
+  let missingValue = 0;
 
   for (const type of types) {
-    const name = type.getAttribute("name") || "Unnamed item";
-    names.set(name, (names.get(name) || 0) + 1);
+    const name = type.getAttribute("name") || "UNKNOWN";
+    seen.set(name, (seen.get(name) || 0) + 1);
 
-    const nominal = getChildNumber(type, "nominal");
-    const lifetime = getChildNumber(type, "lifetime");
-    const category = type.querySelector("category");
+    const nominal = type.getElementsByTagName("nominal")[0]?.textContent?.trim();
+    const lifetime = type.getElementsByTagName("lifetime")[0]?.textContent?.trim();
 
-    if (nominal === 0) disabledItems++;
-    if (lifetime === 0) lifetimeZero++;
-    if (!category) missingCategory++;
+    if (nominal === "0") disabledItems++;
+    if (lifetime === "0") lifetimeZero++;
+    if (!type.getElementsByTagName("category")[0]) missingCategory++;
+    if (!type.getElementsByTagName("usage")[0]) missingUsage++;
+    if (!type.getElementsByTagName("value")[0]) missingValue++;
   }
 
-  const duplicates = Array.from(names.entries()).filter(([, count]) => count > 1);
+  const duplicates = Array.from(seen.entries()).filter(([, count]) => count > 1);
 
   if (duplicates.length > 0) {
-    warnings.push({
-      label: "Duplicate items detected",
-      detail: `${duplicates.length} classnames appear more than once.`,
-    });
-  }
-
-  if (disabledItems > 0) {
-    warnings.push({
-      label: "Disabled items",
-      detail: `${disabledItems} items have nominal set to 0.`,
+    checks.push({
+      level: "warning",
+      title: "Duplicate classnames",
+      message: `${duplicates.length} duplicate item classname(s) found.`,
     });
   }
 
   if (lifetimeZero > 0) {
-    warnings.push({
-      label: "Lifetime issue",
-      detail: `${lifetimeZero} items have lifetime set to 0.`,
+    checks.push({
+      level: "warning",
+      title: "Lifetime set to 0",
+      message: `${lifetimeZero} item(s) have lifetime set to 0.`,
+    });
+  }
+
+  if (disabledItems > 0) {
+    checks.push({
+      level: "info",
+      title: "Disabled items",
+      message: `${disabledItems} item(s) have nominal set to 0. This is common on customized servers.`,
     });
   }
 
   if (missingCategory > 0) {
-    warnings.push({
-      label: "Missing categories",
-      detail: `${missingCategory} items are missing a category tag.`,
+    checks.push({
+      level: "info",
+      title: "Missing categories",
+      message: `${missingCategory} item(s) are missing a category tag.`,
     });
   }
 
-  return warnings;
+  if (missingUsage > 0) {
+    checks.push({
+      level: "info",
+      title: "Missing usage tags",
+      message: `${missingUsage} item(s) are missing a usage tag.`,
+    });
+  }
+
+  if (missingValue > 0) {
+    checks.push({
+      level: "info",
+      title: "Missing value tags",
+      message: `${missingValue} item(s) are missing a value tag.`,
+    });
+  }
+
+  if (checks.length === 0) {
+    checks.push({
+      level: "success",
+      title: "No basic issues detected",
+      message: "No duplicate classnames or common types.xml issues were found.",
+    });
+  }
+
+  return checks;
+}
+
+function getCheckStyle(level: Check["level"]) {
+  if (level === "warning") {
+    return "border-yellow-500/80 bg-yellow-500/10 text-yellow-200";
+  }
+
+  if (level === "success") {
+    return "border-green-500/80 bg-green-500/10 text-green-200";
+  }
+
+  return "border-blue-500/80 bg-blue-500/10 text-blue-200";
+}
+
+function getCheckIcon(level: Check["level"]) {
+  if (level === "warning") return "⚠";
+  if (level === "success") return "✅";
+  return "ℹ";
 }
 
 export default function XMLValidatorPage() {
@@ -103,6 +145,7 @@ export default function XMLValidatorPage() {
     if (!file) return;
 
     const text = await file.text();
+
     const parser = new DOMParser();
     const xml = parser.parseFromString(text, "application/xml");
     const error = xml.querySelector("parsererror");
@@ -113,6 +156,7 @@ export default function XMLValidatorPage() {
         fileName: file.name,
         fileSize: `${(file.size / 1024).toFixed(2)} KB`,
       });
+
       return;
     }
 
@@ -120,7 +164,7 @@ export default function XMLValidatorPage() {
     const itemCount = xml.getElementsByTagName("type").length;
     const fileType = detectDayZFile(file.name, rootNode);
 
-    const warnings =
+    const checks =
       file.name.toLowerCase().includes("types") || rootNode.toLowerCase() === "types"
         ? analyzeTypesXml(xml)
         : [];
@@ -132,7 +176,7 @@ export default function XMLValidatorPage() {
       rootNode,
       itemCount,
       fileType,
-      warnings,
+      checks,
     });
   }
 
@@ -162,38 +206,61 @@ export default function XMLValidatorPage() {
 
             {result.fileName && (
               <div className="mt-5 grid gap-3 text-sm text-zinc-300">
-                <p><span className="text-zinc-500">File:</span> {result.fileName}</p>
-                <p><span className="text-zinc-500">Size:</span> {result.fileSize}</p>
-                {result.fileType && <p><span className="text-zinc-500">Detected:</span> {result.fileType}</p>}
-                {result.rootNode && <p><span className="text-zinc-500">Root Node:</span> &lt;{result.rootNode}&gt;</p>}
+                <p>
+                  <span className="text-zinc-500">File:</span> {result.fileName}
+                </p>
+
+                <p>
+                  <span className="text-zinc-500">Size:</span> {result.fileSize}
+                </p>
+
+                {result.fileType && (
+                  <p>
+                    <span className="text-zinc-500">Detected:</span>{" "}
+                    {result.fileType}
+                  </p>
+                )}
+
+                {result.rootNode && (
+                  <p>
+                    <span className="text-zinc-500">Root Node:</span>{" "}
+                    &lt;{result.rootNode}&gt;
+                  </p>
+                )}
+
                 {typeof result.itemCount === "number" && (
-                  <p><span className="text-zinc-500">Items:</span> {result.itemCount.toLocaleString()}</p>
+                  <p>
+                    <span className="text-zinc-500">Items:</span>{" "}
+                    {result.itemCount.toLocaleString()}
+                  </p>
+                )}
+
+                {result.checks && result.checks.length > 0 && (
+                  <div className="mt-5 border-t border-zinc-800 pt-5">
+                    <p className="mb-3 text-lg font-bold text-green-400">
+                      DayZ Checks
+                    </p>
+
+                    <div className="grid gap-3">
+                      {result.checks.map((check, index) => (
+                        <div
+                          key={index}
+                          className={`rounded-xl border p-4 ${getCheckStyle(
+                            check.level
+                          )}`}
+                        >
+                          <p className="font-bold">
+                            {getCheckIcon(check.level)} {check.title}
+                          </p>
+                          <p className="mt-1 text-sm opacity-90">
+                            {check.message}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-            )}
-
-            {result.warnings && result.warnings.length > 0 && (
-              <div className="mt-6 border-t border-zinc-800 pt-5">
-                <h2 className="text-lg font-bold text-yellow-400">Warnings</h2>
-
-                <div className="mt-4 grid gap-3">
-                  {result.warnings.map((warning) => (
-                    <div
-                      key={warning.label}
-                      className="rounded-xl border border-yellow-900/60 bg-yellow-950/20 p-4"
-                    >
-                      <p className="font-bold text-yellow-300">⚠ {warning.label}</p>
-                      <p className="mt-1 text-sm text-zinc-400">{warning.detail}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {result.warnings && result.warnings.length === 0 && result.fileName && (
-              <p className="mt-6 text-sm text-green-400">
-                ✅ No common DayZ issues detected.
-              </p>
             )}
           </div>
         </div>
