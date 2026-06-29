@@ -1,0 +1,295 @@
+# EXODUS STUDIO CONSTITUTION
+
+Version 1.0
+
+---
+
+# Purpose
+
+Exodus Studio exists to eliminate the complexity of DayZ server management.
+
+Server owners should spend their time building communities—not editing XML files.
+
+Every feature should reduce complexity while increasing understanding.
+
+---
+
+# Core Principles
+
+## 1. Visual First
+
+Users should rarely need to read raw XML.
+
+Everything possible should be represented visually.
+
+Examples
+
+Graphs
+
+Cards
+
+Sliders
+
+Tables
+
+Health Indicators
+
+Interactive Maps
+
+Visual Editors
+
+---
+
+## 2. Explain Everything
+
+Never simply show a value.
+
+Always explain what it does.
+
+Good:
+
+Nominal
+Target amount the Central Economy attempts to maintain.
+
+Bad:
+
+Nominal
+250
+
+---
+
+## 3. Never Hide Information
+
+Advanced users should always be able to inspect the underlying XML.
+
+Visual editing should never lock users out of manual editing.
+
+---
+
+## 4. Safety Before Speed
+
+Every destructive action should be recoverable.
+
+Always support:
+
+Backups
+
+Undo
+
+Version History
+
+Diff Comparison
+
+Validation
+
+Warnings
+
+---
+
+## 5. AI Assists
+
+AI should advise.
+
+AI should not silently modify servers.
+
+Nova explains:
+
+Why
+
+How
+
+Possible consequences
+
+Users remain in control.
+
+---
+
+## 6. Vanilla Is The Reference
+
+Official DayZ files are the baseline.
+
+Every custom value should be comparable against vanilla.
+
+The application should answer:
+
+"What changed?"
+
+---
+
+## 7. Every Feature Must Answer One Question
+
+Does this make server ownership easier?
+
+If not...
+
+It probably doesn't belong.
+
+---
+
+# Product Goals
+
+The application should eventually manage:
+
+Loot Economy
+
+Dynamic Events
+
+Player Spawns
+
+Weather
+
+Territories
+
+Messages
+
+Economy
+
+AI
+
+Maps
+
+POIs
+
+Performance
+
+Backups
+
+Deployment
+
+Community Templates
+
+Premium Services
+
+Everything from one interface.
+
+---
+
+# User Experience
+
+The application should always feel:
+
+Fast
+
+Modern
+
+Professional
+
+Approachable
+
+Reliable
+
+Transparent
+
+---
+
+# Development Philosophy
+
+Prefer architecture over shortcuts.
+
+Prefer reusable systems over duplicated code.
+
+Never sacrifice maintainability for temporary speed.
+
+Small improvements accumulate into great software.
+
+---
+
+# Coding Philosophy
+
+Every new feature should:
+
+Reuse components.
+
+Reuse parsers.
+
+Reuse validators.
+
+Reuse layouts.
+
+Reuse analysis systems.
+
+Avoid duplicate logic.
+
+---
+
+# Premium Philosophy
+
+Premium features should save time.
+
+Never remove essential functionality from free users.
+
+Premium should feel like an enhancement—not a requirement.
+
+Examples:
+
+Cloud Profiles
+
+Team Collaboration
+
+Automatic Backups
+
+Version History
+
+Deployment
+
+Server Sync
+
+Community Marketplace
+
+---
+
+# Nova
+
+Nova is not just a chatbot.
+
+Nova is a DayZ server engineer.
+
+Nova should:
+
+Teach.
+
+Warn.
+
+Recommend.
+
+Analyze.
+
+Explain.
+
+Nova should never overwhelm beginners.
+
+Nova should always respect experienced administrators.
+
+---
+
+# Long-Term Vision
+
+One day a server owner should be able to:
+
+Create a server.
+
+Configure loot.
+
+Generate events.
+
+Design POIs.
+
+Balance the economy.
+
+Deploy to hosting.
+
+Monitor performance.
+
+Receive AI recommendations.
+
+Never touch XML.
+
+All from Exodus Studio.
+
+---
+
+# Motto
+
+Build communities.
+
+Not XML.

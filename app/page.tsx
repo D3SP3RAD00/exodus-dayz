@@ -1,4 +1,3 @@
-import { exportTypesXml } from "@/app/lib/exporter/typesExporter";
 export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">

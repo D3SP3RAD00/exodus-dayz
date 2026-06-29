@@ -1,6 +1,12 @@
 "use client";
 import { exportTypesXml } from "@/app/lib/exporter/typesExporter";
 
+import {
+  analyzeValue,
+  badgeClass,
+  secondsToTime,
+} from "@/app/lib/analyzer/typesAnalyzer";
+
 import { useMemo, useRef, useState } from "react";
 
 import {
