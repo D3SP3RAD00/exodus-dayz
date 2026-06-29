@@ -1,17 +1,27 @@
+import Link from "next/link";
+
 type StudioSidebarProps = {
   active?: string;
 };
 
-export default function StudioSidebar({ active = "Dashboard" }: StudioSidebarProps) {
+export default function StudioSidebar({
+  active = "Dashboard",
+}: StudioSidebarProps) {
   return (
     <aside className="hidden w-72 border-r border-slate-800 bg-[#081421] p-6 lg:flex lg:flex-col">
       <div>
         <div className="flex items-start justify-between gap-3">
-          <h1 className="text-3xl font-black leading-tight text-emerald-400">
-            EXODUS
-            <br />
-            STUDIO
-          </h1>
+          <div>
+            <h1 className="text-3xl font-black leading-tight text-emerald-400">
+              EXODUS
+              <br />
+              STUDIO
+            </h1>
+
+            <p className="mt-2 text-sm text-slate-500">
+              DayZ Development Environment
+            </p>
+          </div>
 
           <span className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-sm font-bold">
             Beta
@@ -19,34 +29,36 @@ export default function StudioSidebar({ active = "Dashboard" }: StudioSidebarPro
         </div>
 
         <nav className="mt-12 space-y-8">
-          <NavSection title="Main">
-            <NavItem label="Dashboard" href="/" active={active === "Dashboard"} />
-            <NavItem label="Loot Economy" active={active === "Loot Economy"} />
-            <SubItem label="types.xml" href="/tools/types" active={active === "types.xml"} />
-            <SubItem label="spawnabletypes.xml" href="#" active={active === "spawnabletypes.xml"} />
-            <SubItem label="events.xml" href="#" active={active === "events.xml"} />
-            <SubItem label="cfgeventspawns.xml" href="#" active={active === "cfgeventspawns.xml"} />
-            <NavItem label="Mission Files" href="#" active={active === "Mission Files"} />
-            <NavItem label="AI Tools" href="#" active={active === "AI Tools"} />
-            <NavItem label="POI Generator" href="#" active={active === "POI Generator"} />
-            <NavItem label="Loot Simulator" href="#" active={active === "Loot Simulator"} />
-          </NavSection>
+          <NavSection title="Workspace">
+            <NavItem
+              label="Dashboard"
+              href="/"
+              active={active === "Dashboard"}
+            />
 
-          <NavSection title="Settings">
-            <NavItem label="Settings" href="#" active={active === "Settings"} />
-            <NavItem label="About" href="#" active={active === "About"} />
+            <NavItem
+              label="types.xml Editor"
+              href="/tools/types"
+              active={active === "types.xml"}
+            />
+
+            <NavItem
+              label="XML Validator"
+              href="/tools/xml-validator"
+              active={active === "XML Validator"}
+            />
           </NavSection>
         </nav>
       </div>
 
-      <div className="mt-auto flex items-center justify-between">
-        <span className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm">
-          v0.1.0
-        </span>
+      <div className="mt-auto border-t border-slate-800 pt-6">
+        <p className="text-xs text-slate-500">
+          Exodus Studio v0.1.0
+        </p>
 
-        <button className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2">
-          «
-        </button>
+        <p className="mt-2 text-xs text-slate-600">
+          3 Working Tools
+        </p>
       </div>
     </aside>
   );
@@ -61,9 +73,10 @@ function NavSection({
 }) {
   return (
     <div>
-      <p className="mb-4 text-sm font-bold uppercase tracking-widest text-slate-500">
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-slate-500">
         {title}
       </p>
+
       <div className="space-y-2">{children}</div>
     </div>
   );
@@ -71,15 +84,15 @@ function NavSection({
 
 function NavItem({
   label,
-  href = "#",
+  href,
   active = false,
 }: {
   label: string;
-  href?: string;
+  href: string;
   active?: boolean;
 }) {
   return (
-    <a
+    <Link
       href={href}
       className={`block rounded-xl px-4 py-3 font-medium transition ${
         active
@@ -88,29 +101,6 @@ function NavItem({
       }`}
     >
       {label}
-    </a>
-  );
-}
-
-function SubItem({
-  label,
-  href = "#",
-  active = false,
-}: {
-  label: string;
-  href?: string;
-  active?: boolean;
-}) {
-  return (
-    <a
-      href={href}
-      className={`ml-4 block rounded-xl px-4 py-3 font-bold transition ${
-        active
-          ? "bg-emerald-500/20 text-white"
-          : "text-slate-400 hover:bg-slate-800"
-      }`}
-    >
-      {label}
-    </a>
+    </Link>
   );
 }
