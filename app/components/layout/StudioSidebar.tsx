@@ -29,26 +29,42 @@ export default function StudioSidebar({
         </div>
 
         <nav className="mt-12 space-y-8">
-          <NavSection title="Workspace">
-            <NavItem
-              label="Dashboard"
-              href="/"
-              active={active === "Dashboard"}
-            />
+  <NavSection title="Main">
+    <NavItem
+      label="Dashboard"
+      href="/"
+      active={active === "Dashboard"}
+    />
 
-            <NavItem
-              label="types.xml Editor"
-              href="/tools/types"
-              active={active === "types.xml"}
-            />
+    <NavItem
+      label="Project Loader"
+      href="/project-loader"
+      active={active === "Project Loader"}
+    />
+  </NavSection>
 
-            <NavItem
-              label="XML Validator"
-              href="/tools/xml-validator"
-              active={active === "XML Validator"}
-            />
-          </NavSection>
-        </nav>
+  <NavSection title="Editors">
+    <NavItem
+      label="types.xml Editor"
+      href="/tools/types"
+      active={active === "types.xml"}
+    />
+
+    <NavItem
+      label="spawnabletypes.xml Editor"
+      href="/tools/spawnabletypes"
+      active={active === "spawnabletypes.xml"}
+    />
+  </NavSection>
+
+  <NavSection title="Tools">
+    <NavItem
+      label="XML Validator"
+      href="/tools/xml-validator"
+      active={active === "XML Validator"}
+    />
+  </NavSection>
+</nav>
       </div>
 
       <div className="mt-auto border-t border-slate-800 pt-6">

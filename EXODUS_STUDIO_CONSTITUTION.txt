@@ -212,6 +212,10 @@ Avoid duplicate logic.
 
 ---
 
+Exodus Studio is a DayZ server development environment, not an XML editor. Every feature should present gameplay concepts first and file formats second.
+
+---
+
 # Premium Philosophy
 
 Premium features should save time.
